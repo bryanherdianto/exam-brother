@@ -204,7 +204,7 @@ if (!$activesession) {
     
     // Sticky Alert Logic Variables
     let alertTimeoutHandle = null; 
-    const ALERT_DURATION_MS = 3000; // Alert stays for 3 seconds even if you look back
+    const ALERT_DURATION_MS = 1000; // Alert stays for 1 seconds even if you look back
     
     // Alert Cooldown
     let lastAlertTime = 0;
@@ -272,10 +272,10 @@ if (!$activesession) {
     async function predictWebcam() {
         // Resize logic
         if (video.videoWidth && video.videoHeight) {
-             if(canvasElement.width !== video.videoWidth) {
-                 canvasElement.width = video.videoWidth;
-                 canvasElement.height = video.videoHeight;
-             }
+            if(canvasElement.width !== video.videoWidth) {
+                canvasElement.width = video.videoWidth;
+                canvasElement.height = video.videoHeight;
+            }
         }
 
         let startTimeMs = performance.now();
@@ -332,13 +332,17 @@ if (!$activesession) {
             if (warningMsg) {
                 triggerAlert(warningMsg);
             }
+        } else if (results && (!results.faceLandmarks || results.faceLandmarks.length === 0)) {
+            // No face detected in the current frame. Show an alert and log it (respects cooldown).
+            triggerAlert('NO FACE DETECTED', 'no_face');
         }
 
         window.requestAnimationFrame(predictWebcam);
     }
 
     // 4. Sticky Alert System
-    function triggerAlert(message) {
+    // message: text to show, alertType: optional string to send to server (e.g., 'head_pose' or 'no_face')
+    function triggerAlert(message, alertType = 'head_pose') {
         // Update text
         alertDesc.innerText = message;
         
@@ -350,7 +354,7 @@ if (!$activesession) {
             clearTimeout(alertTimeoutHandle);
         }
 
-        // Set a new timer to hide it after 3 seconds
+        // Set a new timer to hide it after 1 seconds
         alertTimeoutHandle = setTimeout(() => {
             cheatingAlert.classList.remove("active-alert");
         }, ALERT_DURATION_MS);
@@ -359,11 +363,11 @@ if (!$activesession) {
         const now = Date.now();
         if (now - lastAlertTime > ALERT_COOLDOWN_MS) {
             lastAlertTime = now;
-            logAlertToServer(message);
+            logAlertToServer(message, alertType);
         }
     }
     
-    function logAlertToServer(message) {
+    function logAlertToServer(message, alertType = 'head_pose') {
         if (!window.examSessionId) {
             console.error('No session ID available');
             return;
@@ -376,7 +380,7 @@ if (!$activesession) {
         formData.append('sesskey', window.sesskey);
         formData.append('sessionid', window.examSessionId);
         formData.append('userid', window.userId);
-        formData.append('alerttype', 'head_pose');
+        formData.append('alerttype', alertType);
         formData.append('description', message);
         formData.append('screenshot', screenshot);
         formData.append('severity', 1);
