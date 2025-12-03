@@ -449,7 +449,7 @@ function local_myplugin_before_footer()
 
         // AI Prediction Loop
         async function predictWebcam() {
-            if (!isSubmitting) return;
+            if (isSubmitting) return;
 
             // Resize canvas to match video
             if (canvasElement.width !== video.videoWidth) {
