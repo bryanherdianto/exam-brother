@@ -1,32 +1,73 @@
-# Moodle Exam Monitor Plugin
+# Exam Brother - Moodle Online Exam Monitoring Plugin
 
-A comprehensive Moodle plugin for online exam monitoring with real-time cheating detection using MediaPipe face detection.
+![picture 0](https://i.imgur.com/niKrY2a.jpeg)  
+
+<p align="center">
+ <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" />
+ <img src="https://img.shields.io/badge/Moodle-F98012?style=for-the-badge&logo=moodle&logoColor=white" />
+ <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
+ <img src="https://img.shields.io/badge/MediaPipe-0097A7?style=for-the-badge&logo=google&logoColor=white" />
+ <img src="https://img.shields.io/badge/PostgreSQL-4479A1?style=for-the-badge&logo=postgresql&logoColor=white" />
+ <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
+ <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
+ <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" />
+ <img src="https://img.shields.io/badge/Canvas_API-FF6F00?style=for-the-badge&logo=html5&logoColor=white" />
+</p>
+
+## Overview
+
+A comprehensive Moodle plugin for online exam monitoring with real-time AI-powered cheating detection, seamlessly integrated into Moodle Quiz attempts.
 
 ## Features
 
-### 1. Student Exam Monitoring
+### 1. Seamless Quiz Integration
 
-- **Camera Integration**: Real-time camera feed during exams
-- **Cheating Detection**: Automatic detection when students look left or right
-- **Visual Alerts**: On-screen warnings when cheating is detected
-- **Alert History**: View all alerts during the exam session
-- **Screenshot Capture**: Automatic screenshot when cheating is detected
+- **Auto-Injection**: Monitoring widget automatically appears on all quiz attempt pages
+- **Smart Startup Blocker**: Screen remains blurred until student enables camera - prevents premature access to questions
+- **Anti-Tamper Protection**: Robust checks prevent students from removing the overlay via browser DevTools
+- **Session Management**: Automatically creates and tracks sessions per quiz attempt
+- **Auto-Completion**: Sessions automatically marked as "completed" when quiz is submitted
 
-### 2. Live Proctor Dashboard
+### 2. AI-Powered Monitoring
 
-- **Real-time Monitoring**: View all active exam sessions
-- **Auto-refresh**: Automatic updates every 5 seconds
-- **Student Overview**: See each student's exam status and alert count
-- **Duration Tracking**: Live timer for each exam session
-- **Quick Actions**: End sessions or view detailed reports
+- **Face Detection**: Real-time face tracking using MediaPipe Face Landmarker
+- **Head Pose Analysis**: Detects when students look left, right, or away from screen
+- **Missing Face Detection**: Alerts when no face is visible (with 60-frame buffer to reduce false positives)
+- **Adjustable Sensitivity**: Lax detection thresholds (0.25) to minimize false alerts during normal movement
+- **Alert Cooldown**: 5-second cooldown between alerts to prevent spam
 
-### 3. Post-Exam Reports
+### 3. Tab Switch Detection & Auto-Submit
 
-- **Detailed Timeline**: Complete history of all alerts with timestamps
-- **Screenshot Gallery**: View all captured screenshots
-- **Session Statistics**: Duration, alert counts, and student information
-- **Historical Data**: Browse all past exam sessions
-- **Export Capability**: Ready for future export features
+- **Tab Monitoring**: Tracks when students switch tabs or windows during the exam
+- **Violation Counter**: Persistent count across quiz pages (stored in sessionStorage per attempt)
+- **Smart Detection**: Ignores legitimate page navigation (Next/Previous buttons) using `beforeunload` and form submit event listeners
+- **Three-Strike Policy**: Automatically submits the exam after 3 tab switches
+- **Multi-Step Submission**: Handles Moodle's multi-page submission process (Attempt → Summary → Review)
+- **Resume Protection**: If student clicks "Back" during auto-submit, the process resumes automatically
+- **No Screenshots for Tab Switches**: Tab switch alerts are logged without capturing images to save bandwidth
+
+### 4. Draggable Monitoring Widget
+
+- **User-Friendly Design**: Compact widget with live camera feed in top-right corner
+- **Drag-and-Drop**: Widget can be repositioned by dragging the header
+- **Text Selection Fix**: Widget uses `user-select: none` to prevent interfering with text selection on exam questions
+- **Status Indicators**: Visual indicators for "Offline" (gray dot) and "Active" (green dot)
+
+### 5. Live Proctor Dashboard
+
+- **Real-time Monitoring**: View all active exam sessions with auto-refresh
+- **Student Overview**: See each student's exam status, alert count, and duration
+- **Course Navigation**: Back button preserves `courseid` parameter for easy navigation
+- **Flexible Layout**: Stats displayed in responsive grid with proper vertical centering
+
+### 6. Post-Exam Reports
+
+- **Detailed Timeline**: Complete history of all alerts with timestamps and alert types
+- **Screenshot Gallery**: View all captured screenshots (excluding tab switches)
+- **Modal Image Viewer**: Click any screenshot to view full-size in a centered, responsive modal with close button positioned relative to the image
+- **View Screenshot Buttons**: Buttons in the alert timeline open the corresponding image from the gallery
+- **Session Statistics**: Duration, alert counts, student info, and status displayed in vertically-centered stat cards
+- **Historical Data**: Browse all past exam sessions from the dashboard overview
 
 ## Installation
 
@@ -46,6 +87,8 @@ Stores exam session information:
 
 - Session ID
 - User ID
+- Quiz/Course Module ID
+- Attempt ID (unique per quiz attempt)
 - Exam name
 - Start/end times
 - Status (active/completed)
@@ -56,7 +99,7 @@ Stores cheating detection alerts:
 
 - Alert ID
 - Session ID
-- Alert type (looking_left, looking_right)
+- Alert type (head_pose, missing_face, tab_switch)
 - Description
 - Severity level
 - Timestamp
@@ -68,8 +111,10 @@ Stores screenshots of cheating incidents:
 - Screenshot ID
 - Alert ID
 - Session ID
-- Image data (base64 encoded)
+- Image data (base64 encoded JPEG)
 - Timestamp
+
+**Note**: Tab switch alerts do NOT generate screenshots to conserve storage and bandwidth.
 
 ## Capabilities
 
@@ -91,215 +136,42 @@ The plugin defines three capabilities:
 
 ### Frontend
 
-- **JavaScript**: AMD module format for Moodle compatibility
-- **MediaPipe**: Face detection using MediaPipe Tasks Vision library
-- **AJAX**: Real-time communication with backend
-- **Responsive Design**: Works on desktop and tablet devices
+- **JavaScript (ES6 Modules)**: Uses native `import` statements for MediaPipe integration
+- **MediaPipe Face Landmarker**: AI-powered face detection using MediaPipe Tasks Vision v0.10.3
+- **Canvas API**: Live video feed rendering with mirrored display and landmark visualization
+- **Drag-and-Drop API**: Native HTML5 drag events for repositionable widget
+- **Fetch API**: Real-time alert logging via custom AJAX endpoint
+- **sessionStorage**: Persistent tab switch counter and auto-submit flags scoped per attempt ID
+- **Event Listeners**: `visibilitychange`, `beforeunload`, `submit`, and form events for comprehensive monitoring
+- **Anti-Tamper**: `setInterval` loop continuously checks and re-applies security measures
 
 ### Backend
 
-- **External API**: Web services for AJAX calls
-- **Database API**: Standard Moodle database operations
-- **Capability Checks**: Proper permission validation
-- **Security**: Input validation and sanitization
+- **lib.php Hook**: `local_myplugin_before_footer()` injects monitoring widget into quiz pages
+- **Custom AJAX Handler**: `ajax/api.php` processes alert logging requests with sesskey validation
+- **Database API**: Standard Moodle `$DB` operations for sessions, alerts, and screenshots
+- **Capability Checks**: Permission validation for monitoring and viewing reports
+- **Security**: Input validation, PARAM_* constants, and sesskey verification
+- **Base64 Image Storage**: Screenshots stored as JPEG data URLs in the database
 
 ## File Structure
 
 ```txt
 local/myplugin/
-├── amd/
-│   ├── src/
-│   │   └── face_detection.js          # Source JavaScript
-│   └── build/
-│       └── face_detection.min.js      # Minified JavaScript
-├── classes/
-│   └── external/
-│       ├── log_alert.php              # Log alert API
-│       ├── end_session.php            # End session API
-│       └── get_active_sessions.php    # Get sessions API
+├── ajax/
+│   └── api.php                        # Custom AJAX handler for alert logging
 ├── db/
 │   ├── access.php                     # Capability definitions
-│   ├── install.xml                    # Database schema
+│   ├── install.sql                    # Database schema (SQL format)
 │   └── services.php                   # Web services definition
 ├── lang/
 │   └── en/
 │       └── local_myplugin.php         # English language strings
-├── index.php                          # Main landing page
-├── student_exam.php                   # Student exam interface
+├── lib.php                            # Core plugin logic (quiz integration, monitoring widget)
+├── index.php                          # Course-level landing page
+├── student_exam.php                   # [DEPRECATED] Legacy standalone exam page
 ├── proctor_live.php                   # Live monitoring dashboard
-├── proctor_dashboard.php              # Post-exam reports
-├── styles.css                         # Plugin styles
+├── proctor_dashboard.php              # Post-exam reports and session details
+├── styles.css                         # Plugin styles (widget, dashboard, modal)
 └── version.php                        # Plugin version info
 ```
-
-## Usage
-
-### For Students
-
-1. Navigate to the plugin homepage
-2. Click "Start Exam"
-3. Allow camera access when prompted
-4. Click "Enable Camera" to begin monitoring
-5. Complete the exam normally
-6. Click "End Exam" when finished
-
-### For Proctors (Teachers)
-
-#### Live Monitoring
-
-1. Navigate to "Live Monitoring"
-2. View all active exam sessions
-3. Monitor alert counts in real-time
-4. Click "View Details" for specific student
-5. Use "End Session" if needed
-
-#### View Reports
-
-1. Navigate to "Exam Reports"
-2. Browse all exam sessions
-3. Click "View Details" on any session
-4. Review alert timeline
-5. View captured screenshots
-
-## Cheating Detection
-
-The system detects the following behaviors:
-
-- **Looking Left**: Head rotation beyond -15 degrees (yaw)
-- **Looking Right**: Head rotation beyond +15 degrees (yaw)
-
-Detection parameters can be adjusted in `face_detection.js`:
-
-```javascript
-const LOOKING_LEFT_THRESHOLD = -15;
-const LOOKING_RIGHT_THRESHOLD = 15;
-```
-
-## MediaPipe Integration
-
-The plugin uses MediaPipe Face Landmarker for head pose detection:
-
-- **Library**: MediaPipe Tasks Vision v0.10.8
-- **CDN**: <https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8>
-- **Detection Rate**: 10 FPS (every 100ms)
-- **Alert Cooldown**: 2 seconds between alerts
-
-## Browser Compatibility
-
-- Chrome 80+ (Recommended)
-- Firefox 75+
-- Edge 80+
-- Safari 13+ (with limitations)
-
-**Note**: Camera access requires HTTPS in production environments.
-
-## Future Enhancements
-
-Potential features for future versions:
-
-1. Integration with Moodle Quiz module
-2. Multiple detection methods (face recognition, screen capture)
-3. Audio monitoring
-4. AI-based behavior analysis
-5. Export reports to PDF
-6. Email notifications for proctors
-7. Mobile app support
-8. Advanced analytics and trends
-
-## Configuration
-
-No additional configuration required. The plugin works out of the box after installation.
-
-Optional: Adjust JavaScript detection parameters in `amd/src/face_detection.js`
-
-## Support
-
-For issues or questions:
-
-- Check the Moodle logs: Site Administration > Reports > Logs
-- Enable debugging: Site Administration > Development > Debugging
-- Review browser console for JavaScript errors
-
-## License
-
-This plugin is licensed under the GNU GPL v3 or later.
-
-## Credits
-
-- MediaPipe by Google
-- Moodle Community
-- Face detection algorithms based on MediaPipe Face Mesh
-
-## Version History
-
-### v1.0 (2025-11-05)
-
-- Initial release
-- Basic camera monitoring
-- Left/right head movement detection
-- Live proctor dashboard
-- Post-exam reports
-- Screenshot capture
-
-## Privacy
-
-This plugin processes video data for exam monitoring:
-
-- Video is processed locally in the browser
-- Only screenshots are stored when cheating is detected
-- Stored images are accessible only to authorized proctors
-- Data is retained per institutional policy
-
-Ensure compliance with local privacy laws and inform students of monitoring.
-
-## Troubleshooting
-
-### Camera Not Working
-
-- Check browser permissions
-- Ensure HTTPS connection
-- Verify camera is not in use by another application
-
-### MediaPipe Not Loading
-
-- Check internet connection (CDN required)
-- Verify firewall settings
-- Check browser console for errors
-
-### Alerts Not Saving
-
-- Check Moodle error logs
-- Verify database tables exist
-- Ensure web services are enabled
-
-### Dashboard Not Updating
-
-- Enable auto-refresh toggle
-- Check browser console for errors
-- Verify AJAX endpoints are working
-
-## Development
-
-To modify the JavaScript:
-
-1. Edit `amd/src/face_detection.js`
-2. Minify for production: Copy to `amd/build/face_detection.min.js`
-3. Clear Moodle cache: Site Administration > Development > Purge all caches
-
-## Testing
-
-Recommended testing procedure:
-
-1. Create test student account
-2. Create test teacher account
-3. Student: Start exam and enable camera
-4. Student: Look left and right to trigger alerts
-5. Teacher: Monitor in live dashboard
-6. Student: End exam
-7. Teacher: Review reports and screenshots
-
----
-
-**Author**: Bryan Herdianto  
-**Repository**: exambrother  
-**Last Updated**: November 5, 2025

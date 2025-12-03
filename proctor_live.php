@@ -15,6 +15,8 @@ $PAGE->set_pagelayout('standard');
 // Add CSS
 $PAGE->requires->css('/local/myplugin/styles.css');
 
+$courseid = optional_param('courseid', 0, PARAM_INT);
+
 echo $OUTPUT->header();
 
 global $DB;
@@ -34,15 +36,18 @@ $globalalerts = $DB->get_records_sql(
 ?>
 
 <div class="proctor-dashboard">
+    <div class="breadcrumb">
+        <a href="<?php echo new moodle_url('/local/myplugin/index.php', ['id' => $courseid]); ?>" class="btn btn-secondary">
+            Back
+        </a>
+    </div>
+
     <div class="dashboard-header">
-        <h2><?php echo get_string('liveproctor', 'local_myplugin'); ?></h2>
-        <div class="refresh-controls">
-            <span class="last-update">Last updated: <span id="last-update-time">--:--:--</span></span>
-            <button class="btn btn-primary" id="refresh-btn">Refresh Now</button>
-            <label class="auto-refresh-toggle">
-                <input type="checkbox" id="auto-refresh" checked> Auto-refresh (5s)
-            </label>
-        </div>
+        <span class="last-update">Last updated: <span id="last-update-time">--:--:--</span></span>
+        <button class="btn btn-primary" id="refresh-btn">Refresh Now</button>
+        <label class="auto-refresh-toggle">
+            <input type="checkbox" id="auto-refresh" checked> Auto-refresh (5s)
+        </label>
     </div>
 
     <?php if (empty($activesessions)): ?>
@@ -51,23 +56,24 @@ $globalalerts = $DB->get_records_sql(
         </div>
     <?php else: ?>
         <div class="active-sessions-grid" id="active-sessions">
-            <?php foreach ($activesessions as $session): 
+            <?php foreach ($activesessions as $session):
                 $user = $DB->get_record('user', ['id' => $session->userid]);
                 $alertcount = $DB->count_records('local_myplugin_alerts', ['sessionid' => $session->id]);
-                $recentalerts = $DB->get_records('local_myplugin_alerts', 
-                    ['sessionid' => $session->id], 
-                    'timecreated DESC', 
-                    '*', 
-                    0, 
+                $recentalerts = $DB->get_records(
+                    'local_myplugin_alerts',
+                    ['sessionid' => $session->id],
+                    'timecreated DESC',
+                    '*',
+                    0,
                     5
                 );
             ?>
                 <div class="session-card" data-sessionid="<?php echo $session->id; ?>">
                     <div class="session-header">
                         <div class="student-info">
-                            <img src="<?php echo new moodle_url('/user/pix.php/'.$session->userid.'/f1.jpg'); ?>" 
-                                 alt="<?php echo fullname($user); ?>" 
-                                 class="student-avatar">
+                            <img src="<?php echo new moodle_url('/user/pix.php/' . $session->userid . '/f1.jpg'); ?>"
+                                alt="<?php echo fullname($user); ?>"
+                                class="student-avatar">
                             <div>
                                 <h4><?php echo fullname($user); ?></h4>
                                 <p class="exam-name"><?php echo $session->examname; ?></p>
@@ -102,14 +108,13 @@ $globalalerts = $DB->get_records_sql(
                         <?php else: ?>
                             <div class="alert-list">
                                 <?php foreach ($recentalerts as $alert): ?>
-                                    <div class="alert-item">
-                                        <span class="alert-icon">⚠️</span>
+                                    <div class="alert-item d-flex align-items-center">
                                         <div class="alert-content">
-                                            <div class="d-flex justify-content-between">
-                                                <span class="alert-type font-weight-bold"><?php echo ucwords(str_replace('_', ' ', $alert->alerttype)); ?></span>
-                                                <span class="alert-time small text-muted"><?php echo userdate($alert->timecreated, '%H:%M:%S'); ?></span>
+                                            <div>
+                                                <span class="alert-type"><?php echo ucwords(str_replace('_', ' ', $alert->alerttype)); ?></span>
+                                                <span class="alert-time"><?php echo userdate($alert->timecreated, '%H:%M:%S'); ?></span>
                                             </div>
-                                            <div class="alert-desc small text-danger"><?php echo $alert->description; ?></div>
+                                            <div class="alert-desc text-danger"><?php echo $alert->description; ?></div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -118,12 +123,12 @@ $globalalerts = $DB->get_records_sql(
                     </div>
 
                     <div class="session-actions">
-                        <button class="btn btn-sm btn-info view-details-btn" 
-                                data-sessionid="<?php echo $session->id; ?>">
+                        <button class="btn btn-sm btn-info view-details-btn"
+                            data-sessionid="<?php echo $session->id; ?>">
                             View Details
                         </button>
-                        <button class="btn btn-sm btn-danger end-session-btn" 
-                                data-sessionid="<?php echo $session->id; ?>">
+                        <button class="btn btn-sm btn-danger end-session-btn"
+                            data-sessionid="<?php echo $session->id; ?>">
                             End Session
                         </button>
                     </div>
@@ -152,147 +157,141 @@ $globalalerts = $DB->get_records_sql(
 </div>
 
 <script>
-let autoRefreshInterval;
-let isAutoRefresh = true;
+    let autoRefreshInterval;
+    let isAutoRefresh = true;
 
-// Update durations every second
-setInterval(updateDurations, 1000);
+    // Update durations every second
+    setInterval(updateDurations, 1000);
 
-function updateDurations() {
-    document.querySelectorAll('.duration').forEach(function(elem) {
-        const startTime = parseInt(elem.dataset.starttime);
-        const now = Math.floor(Date.now() / 1000);
-        const duration = now - startTime;
-        
-        const hours = Math.floor(duration / 3600);
-        const minutes = Math.floor((duration % 3600) / 60);
-        const seconds = duration % 60;
-        
-        elem.textContent = 
-            (hours > 0 ? hours + ':' : '') +
-            String(minutes).padStart(2, '0') + ':' + 
-            String(seconds).padStart(2, '0');
-    });
-}
+    function updateDurations() {
+        document.querySelectorAll('.duration').forEach(function(elem) {
+            const startTime = parseInt(elem.dataset.starttime);
+            const now = Math.floor(Date.now() / 1000);
+            const duration = now - startTime;
 
-// Auto-refresh functionality
-function refreshDashboard() {
-    fetch(window.location.href)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newSessions = doc.querySelector('#active-sessions');
-            const oldSessions = document.querySelector('#active-sessions');
-            
-            if (newSessions && oldSessions) {
-                oldSessions.innerHTML = newSessions.innerHTML;
-                setupEventListeners();
-            }
+            const hours = Math.floor(duration / 3600);
+            const minutes = Math.floor((duration % 3600) / 60);
+            const seconds = duration % 60;
 
-            const newAlerts = doc.querySelector('#alert-feed');
-            const oldAlerts = document.querySelector('#alert-feed');
-            if (newAlerts && oldAlerts) {
-                oldAlerts.innerHTML = newAlerts.innerHTML;
-            }
-            
-            document.getElementById('last-update-time').textContent = 
-                new Date().toLocaleTimeString();
-        })
-        .catch(error => {
-            console.error('Error refreshing dashboard:', error);
+            elem.textContent =
+                (hours > 0 ? hours + ':' : '') +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
         });
-    
-    // Fetch new alerts
-    fetchRecentAlerts();
-}
-
-function fetchRecentAlerts() {
-    // In production, this would call an AJAX endpoint
-    // For now, we'll skip the implementation
-}
-
-// Setup auto-refresh
-function startAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
     }
-    autoRefreshInterval = setInterval(refreshDashboard, 5000); // Every 5 seconds
-}
 
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
+    // Auto-refresh functionality
+    function refreshDashboard() {
+        fetch(window.location.href)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newSessions = doc.querySelector('#active-sessions');
+                const oldSessions = document.querySelector('#active-sessions');
+
+                if (newSessions && oldSessions) {
+                    oldSessions.innerHTML = newSessions.innerHTML;
+                    setupEventListeners();
+                }
+
+                const newAlerts = doc.querySelector('#alert-feed');
+                const oldAlerts = document.querySelector('#alert-feed');
+                if (newAlerts && oldAlerts) {
+                    oldAlerts.innerHTML = newAlerts.innerHTML;
+                }
+
+                document.getElementById('last-update-time').textContent =
+                    new Date().toLocaleTimeString();
+            })
+            .catch(error => {
+                console.error('Error refreshing dashboard:', error);
+            });
+
+        // Fetch new alerts
+        fetchRecentAlerts();
     }
-}
 
-// Event listeners
-function setupEventListeners() {
-    // View details buttons
-    document.querySelectorAll('.view-details-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const sessionId = this.dataset.sessionid;
-            window.location.href = '<?php echo $CFG->wwwroot; ?>/local/myplugin/proctor_dashboard.php?sessionid=' + sessionId;
-        });
-    });
-
-    // End session buttons
-    document.querySelectorAll('.end-session-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const sessionId = this.dataset.sessionid;
-            if (confirm('Are you sure you want to end this exam session?')) {
-                endSession(sessionId);
-            }
-        });
-    });
-}
-
-function endSession(sessionId) {
-    // In production, this would call an AJAX endpoint
-    const formData = new FormData();
-    formData.append('action', 'end_session');
-    formData.append('sessionid', sessionId);
-
-    fetch('<?php echo $CFG->wwwroot; ?>/local/myplugin/ajax/api.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            refreshDashboard();
-        } else {
-            alert('Error: ' + data.message);
+    // Setup auto-refresh
+    function startAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
         }
-    })
-    .catch(error => {
-        console.error('Error ending session:', error);
-    });
-}
+        autoRefreshInterval = setInterval(refreshDashboard, 5000); // Every 5 seconds
+    }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    setupEventListeners();
-    updateDurations();
-    
-    // Refresh button
-    document.getElementById('refresh-btn').addEventListener('click', refreshDashboard);
-    
-    // Auto-refresh toggle
-    document.getElementById('auto-refresh').addEventListener('change', function() {
-        isAutoRefresh = this.checked;
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    }
+
+    // Event listeners
+    function setupEventListeners() {
+        // View details buttons
+        document.querySelectorAll('.view-details-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const sessionId = this.dataset.sessionid;
+                window.location.href = '<?php echo $CFG->wwwroot; ?>/local/myplugin/proctor_dashboard.php?sessionid=' + sessionId;
+            });
+        });
+
+        // End session buttons
+        document.querySelectorAll('.end-session-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const sessionId = this.dataset.sessionid;
+                if (confirm('Are you sure you want to end this exam session?')) {
+                    endSession(sessionId);
+                }
+            });
+        });
+    }
+
+    function endSession(sessionId) {
+        const formData = new FormData();
+        formData.append('action', 'end_session');
+        formData.append('sessionid', sessionId);
+
+        fetch('<?php echo $CFG->wwwroot; ?>/local/myplugin/ajax/api.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    refreshDashboard();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error ending session:', error);
+            });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        setupEventListeners();
+        updateDurations();
+
+        // Refresh button
+        document.getElementById('refresh-btn').addEventListener('click', refreshDashboard);
+
+        // Auto-refresh toggle
+        document.getElementById('auto-refresh').addEventListener('change', function() {
+            isAutoRefresh = this.checked;
+            if (isAutoRefresh) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+
+        // Start auto-refresh
         if (isAutoRefresh) {
             startAutoRefresh();
-        } else {
-            stopAutoRefresh();
         }
     });
-    
-    // Start auto-refresh
-    if (isAutoRefresh) {
-        startAutoRefresh();
-    }
-});
 </script>
 
 <?php

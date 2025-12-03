@@ -31,35 +31,31 @@ try {
             $description = required_param('description', PARAM_TEXT);
             $screenshot = optional_param('screenshot', '', PARAM_RAW); // Base64 data
             $severity = optional_param('severity', 1, PARAM_INT);
-            
+
             // Check sesskey if provided, or enforce it
             $sesskey = optional_param('sesskey', '', PARAM_RAW);
             if (!empty($sesskey) && !confirm_sesskey($sesskey)) {
-                 throw new moodle_exception('invalidsesskey');
+                throw new moodle_exception('invalidsesskey');
             }
 
             error_log("Processing log_alert for session $sessionid");
 
-            // Call external function
-            // We need to include the class file manually if autoloading isn't picking it up yet, 
-            // but Moodle's autoloader should handle classes/external/log_alert.php -> \local_myplugin\external\log_alert
-            
             $response = \local_myplugin\external\log_alert::execute(
-                $sessionid, 
-                $userid, 
-                $alerttype, 
-                $description, 
-                $screenshot, 
+                $sessionid,
+                $userid,
+                $alerttype,
+                $description,
+                $screenshot,
                 $severity
             );
-            
+
             $result = $response;
             break;
 
         case 'end_session':
             require_capability('local/myplugin:monitor', $context);
             $sessionid = required_param('sessionid', PARAM_INT);
-            
+
             $response = \local_myplugin\external\end_session::execute($sessionid);
             $result = $response;
             break;

@@ -1,6 +1,6 @@
 /* General Container */
 .exam-monitor-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 20px auto;
     padding: 0 20px;
 }
@@ -14,7 +14,7 @@
     padding: 20px;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
 }
 
 .monitoring-status {
@@ -54,8 +54,15 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* Exam Content Layout */
@@ -77,7 +84,7 @@
     background: #fff;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
 }
 
 .sample-question {
@@ -123,8 +130,15 @@
 }
 
 @keyframes alertFlash {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 .alert-icon {
@@ -148,7 +162,7 @@
     background: #fff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
 }
 
 .camera-section h3 {
@@ -184,7 +198,7 @@
     background: #fff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
     max-height: 400px;
     overflow-y: auto;
 }
@@ -211,7 +225,7 @@
 }
 
 .alert-desc {
-    color: #333;
+    font-weight: 600;
 }
 
 .no-alerts {
@@ -225,9 +239,8 @@
    ============================================ */
 
 .proctor-dashboard {
-    max-width: 1400px;
-    margin: 20px auto;
-    padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .dashboard-header {
@@ -238,13 +251,7 @@
     padding: 20px;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.refresh-controls {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    border: 1px solid #dee2e6;
 }
 
 .last-update {
@@ -272,13 +279,13 @@
     background: #fff;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .session-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .session-header {
@@ -364,9 +371,9 @@
 
 .alert-count .value.badge {
     display: inline-block;
-    padding: 4px 12px;
     border-radius: 12px;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .badge-success {
@@ -411,10 +418,6 @@
     font-size: 13px;
 }
 
-.alert-icon {
-    font-size: 18px;
-}
-
 .alert-content {
     display: flex;
     justify-content: space-between;
@@ -422,6 +425,7 @@
 }
 
 .alert-type {
+    font-size: 14px;
     font-weight: 600;
     color: #856404;
 }
@@ -453,7 +457,7 @@
     background: #fff;
     padding: 25px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
     margin-top: 30px;
 }
 
@@ -478,21 +482,11 @@
     margin-bottom: 20px;
 }
 
-.breadcrumb a {
-    color: #007bff;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.breadcrumb a:hover {
-    text-decoration: underline;
-}
-
 .session-overview {
     background: #fff;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
     margin-bottom: 30px;
 }
 
@@ -516,21 +510,12 @@
     margin: 5px 0 0 0;
 }
 
-.session-status-badge {
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.session-status-badge.active {
+.stat-card.active {
     background: #d4edda;
-    color: #155724;
 }
 
-.session-status-badge.completed {
+.stat-card.completed {
     background: #cce5ff;
-    color: #004085;
 }
 
 .session-stats {
@@ -544,6 +529,8 @@
     background: #f8f9fa;
     border-radius: 8px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .stat-card.alert-stat {
@@ -562,6 +549,10 @@
     font-size: 24px;
     font-weight: 700;
     color: #333;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .stat-value.alert-count {
@@ -573,7 +564,7 @@
     background: #fff;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
     margin-bottom: 30px;
 }
 
@@ -661,7 +652,7 @@
     background: #fff;
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
 }
 
 .screenshots-gallery h3 {
@@ -698,7 +689,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
     padding: 15px;
     color: #fff;
     font-size: 12px;
@@ -711,7 +702,7 @@
     background: #fff;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
     overflow-x: auto;
 }
 
@@ -791,23 +782,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
 }
 
 .modal-content {
     position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: transparent;
 }
 
 .modal-content img {
-    max-width: 100%;
-    max-height: 90vh;
-    width: auto;
-    height: auto;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
@@ -836,19 +820,19 @@
     .exam-content {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar-section {
         flex-direction: row;
     }
-    
+
     .camera-section {
         flex: 1;
     }
-    
+
     .alert-history {
         flex: 1;
     }
-    
+
     .active-sessions-grid {
         grid-template-columns: 1fr;
     }
@@ -858,21 +842,21 @@
     .session-details {
         grid-template-columns: 1fr;
     }
-    
+
     .sidebar-section {
         flex-direction: column;
     }
-    
+
     .dashboard-header {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .refresh-controls {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .gallery-grid {
         grid-template-columns: 1fr;
     }
